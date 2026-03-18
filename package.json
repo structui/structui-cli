@@ -1,0 +1,44 @@
+{
+  "name": "sui",
+  "version": "0.1.0",
+  "description": "Struct UI CLI for adding blocks and components to your project.",
+  "license": "MIT",
+  "author": "Struct UI",
+  "homepage": "https://structui.com",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/structui/struct-cli.git"
+  },
+  "bugs": {
+    "url": "https://github.com/structui/struct-cli/issues"
+  },
+  "keywords": [
+    "structui",
+    "cli",
+    "components",
+    "blocks",
+    "typescript",
+    "design-system"
+  ],
+  "bin": {
+    "sui": "./dist/cli.js"
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "engines": {
+    "node": ">=18.17"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "dev": "node --enable-source-maps ./dist/cli.js",
+    "check": "tsc --noEmit -p tsconfig.json",
+    "struct:list": "sui list",
+    "struct:update": "sui update"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "typescript": "^5.9.2"
+  }
+}

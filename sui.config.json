@@ -1,0 +1,6 @@
+{
+  "registryUrl": "https://structui.com/api/registry/index.json",
+  "installPath": "components/struct",
+  "statePath": ".sui/installed.json",
+  "cachePath": ".sui/cache/registry-index.json"
+}

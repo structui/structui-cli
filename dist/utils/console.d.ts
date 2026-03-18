@@ -1,0 +1,10 @@
+export declare function titleText(value: string): string;
+export declare function accentText(value: string): string;
+export declare function successText(value: string): string;
+export declare function warningText(value: string): string;
+export declare function errorText(value: string): string;
+export declare function mutedText(value: string): string;
+export declare function divider(): void;
+export declare function section(title: string, body?: string): void;
+export declare function formatCommand(command: string): string;
+export declare function indent(value: string, spaces?: number): string;
