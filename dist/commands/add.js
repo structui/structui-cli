@@ -13,19 +13,9 @@ const state_1 = require("../core/state");
 const args_1 = require("../utils/args");
 const fs_1 = require("../utils/fs");
 const console_1 = require("../utils/console");
-const setup_1 = require("./setup");
-// Names that should be routed to the setup generator instead of the registry
-const SETUP_NAMES = new Set([
-    "crm-setup", "erp-setup", "saas-setup", "auth-setup", "auth-only",
-    "crm", "erp", "saas", "auth",
-]);
 async function addCommand(args) {
     const parsed = (0, args_1.parseArgs)(args);
     let [name] = parsed.positionals;
-    // Intercept setup names and delegate to the setup generator
-    if (name && SETUP_NAMES.has(name.toLowerCase())) {
-        return (0, setup_1.setupCommand)(args);
-    }
     const cwd = process.cwd();
     const config = await (0, config_1.loadConfig)(cwd);
     const index = await (0, registry_1.loadRegistryIndex)(config);
@@ -61,11 +51,17 @@ async function addCommand(args) {
         targetPaths: writtenPaths,
         source: config.registryUrl
     });
-    (0, console_1.section)("Installed", (0, console_1.successText)(`${detail.name}@${detail.version}`));
+    (0, console_1.section)("Installed", (0, console_1.successText)(`${detail.name}@${detail.version}`) + (0, console_1.mutedText)(` (${detail.type})`));
     console.log((0, console_1.indent)(detail.description));
     (0, console_1.divider)();
     for (const filePath of writtenPaths) {
         console.log((0, console_1.indent)(filePath));
+    }
+    if (detail.type === "block") {
+        (0, console_1.divider)();
+        console.log((0, console_1.indent)((0, console_1.warningText)("Blocks require Struct UI styles to render correctly.")));
+        console.log((0, console_1.indent)((0, console_1.mutedText)("If you haven't already, run: npx sui style")));
+        console.log((0, console_1.indent)((0, console_1.mutedText)("Also ensure your <html> element has className=\"dark\" or a theme class.")));
     }
     if (target.dependencies.length > 0) {
         (0, console_1.divider)();

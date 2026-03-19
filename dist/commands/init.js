@@ -57,5 +57,8 @@ export function cn(...inputs: ClassValue[]) {
         console.log((0, console_1.indent)((0, console_1.warningText)("Failed to install dependencies. Please run 'npm install clsx tailwind-merge' manually.")));
     }
     (0, console_1.divider)();
-    console.log((0, console_1.indent)((0, console_1.mutedText)("Next step: npx sui search")));
+    console.log((0, console_1.indent)((0, console_1.mutedText)("Next steps:")));
+    console.log((0, console_1.indent)((0, console_1.mutedText)("1. Run `npx sui style` to apply CSS variables and theme tokens to your globals.css")));
+    console.log((0, console_1.indent)((0, console_1.mutedText)("2. Add className=\"dark\" to your <html> element (or use a theme provider)")));
+    console.log((0, console_1.indent)((0, console_1.mutedText)("3. Run `npx sui search` to browse components and blocks")));
 }

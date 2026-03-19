@@ -11,8 +11,25 @@ async function searchCommand(args) {
     const cwd = process.cwd();
     const config = await (0, config_1.loadConfig)(cwd);
     const index = await (0, registry_1.loadRegistryIndex)(config);
-    const results = (0, registry_1.searchRegistryItems)(index, query);
-    (0, console_1.section)("Registry Search", query ? `Query: ${query}` : (0, console_1.mutedText)("Showing all packages"));
+    let typeFilter;
+    if ((0, args_1.hasFlag)(parsed, "--blocks", "-b")) {
+        typeFilter = "block";
+    }
+    else if ((0, args_1.hasFlag)(parsed, "--components", "-c")) {
+        typeFilter = "component";
+    }
+    else {
+        const typeValue = (0, args_1.getFlagValue)(parsed, "--type", "-t");
+        if (typeValue === "block" || typeValue === "component") {
+            typeFilter = typeValue;
+        }
+    }
+    let results = (0, registry_1.searchRegistryItems)(index, query);
+    if (typeFilter) {
+        results = results.filter((item) => item.type === typeFilter);
+    }
+    const typeLabel = typeFilter ? ` [${typeFilter}s only]` : "";
+    (0, console_1.section)("Registry Search", query ? `Query: ${query}${typeLabel}` : (0, console_1.mutedText)(`Showing all packages${typeLabel}`));
     if (results.length === 0) {
         console.log((0, console_1.indent)((0, console_1.mutedText)("No matching packages found.")));
         return;

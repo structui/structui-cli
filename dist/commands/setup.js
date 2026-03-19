@@ -14,15 +14,11 @@ const fs_1 = require("../utils/fs");
 const console_1 = require("../utils/console");
 // ─── Fallback static list (used if API is unreachable) ───────────────────────
 const FALLBACK_SETUPS = [
-    { name: "crm", label: "CRM", icon: "👥", description: "Sign-in/up, dashboard, customers, deals, activities, reports.", pages: ["Dashboard", "Customers", "Deals", "Activities", "Reports", "Profile"], installCommand: "npx sui add crm-setup" },
-    { name: "erp", label: "ERP", icon: "🏭", description: "Dashboard, inventory, orders, procurement, finance, HR, reports.", pages: ["Dashboard", "Inventory", "Orders", "Finance", "HR", "Reports", "Profile"], installCommand: "npx sui add erp-setup" },
-    { name: "saas", label: "SaaS", icon: "🚀", description: "Landing page, dashboard, analytics, users, billing, settings.", pages: ["Landing", "Dashboard", "Analytics", "Users", "Billing", "Settings", "Profile"], installCommand: "npx sui add saas-setup" },
-    { name: "auth", label: "Auth", icon: "🔐", description: "Sign-in, sign-up, forgot password and a protected home page.", pages: ["Sign In", "Sign Up", "Forgot Password", "Protected Home"], installCommand: "npx sui add auth-setup" },
+    { name: "crm", label: "CRM", icon: "👥", description: "Sign-in/up, dashboard, customers, deals, activities, reports.", pages: ["Dashboard", "Customers", "Deals", "Activities", "Reports", "Profile"] },
+    { name: "erp", label: "ERP", icon: "🏭", description: "Dashboard, inventory, orders, procurement, finance, HR, reports.", pages: ["Dashboard", "Inventory", "Orders", "Finance", "HR", "Reports", "Profile"] },
+    { name: "saas", label: "SaaS", icon: "🚀", description: "Landing page, dashboard, analytics, users, billing, settings.", pages: ["Landing", "Dashboard", "Analytics", "Users", "Billing", "Settings", "Profile"] },
+    { name: "auth", label: "Auth", icon: "🔐", description: "Sign-in, sign-up, forgot password and a protected home page.", pages: ["Sign In", "Sign Up", "Forgot Password", "Protected Home"] },
 ];
-const SETUP_ALIASES = {
-    "crm-setup": "crm", "erp-setup": "erp", "saas-setup": "saas",
-    "auth-setup": "auth", "auth-only": "auth",
-};
 const COLOR_CHOICES = [
     { title: "Slate", value: "slate", description: "Neutral cool gray" },
     { title: "Blue", value: "blue", description: "Classic blue" },
@@ -93,7 +89,7 @@ async function setupCommand(args) {
     // 2. Resolve setup type ────────────────────────────────────────────────────
     const rawArg = args[0]?.toLowerCase().trim() ?? "";
     let setupName = rawArg
-        ? (SETUP_ALIASES[rawArg] ?? (setupEntries.find((s) => s.name === rawArg)?.name ?? null))
+        ? (setupEntries.find((s) => s.name === rawArg)?.name ?? null)
         : null;
     if (!setupName) {
         if (rawArg) {

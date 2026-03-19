@@ -65,5 +65,8 @@ export function cn(...inputs: ClassValue[]) {
   }
 
   divider();
-  console.log(indent(mutedText("Next step: npx sui search")));
+  console.log(indent(mutedText("Next steps:")));
+  console.log(indent(mutedText("1. Run `npx sui style` to apply CSS variables and theme tokens to your globals.css")));
+  console.log(indent(mutedText("2. Add className=\"dark\" to your <html> element (or use a theme provider)")));
+  console.log(indent(mutedText("3. Run `npx sui search` to browse components and blocks")));
 }

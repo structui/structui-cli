@@ -1,6 +1,6 @@
 {
   "name": "structui-cli",
-  "version": "0.1.3",
+  "version": "0.1.5",
   "description": "Struct UI CLI for adding blocks and components to your project.",
   "main": "dist/index.js",
   "bin": {

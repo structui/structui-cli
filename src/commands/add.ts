@@ -7,22 +7,10 @@ import { saveInstalledPackage } from "../core/state";
 import { parseArgs } from "../utils/args";
 import { writeTextFile } from "../utils/fs";
 import { divider, indent, mutedText, section, successText, warningText } from "../utils/console";
-import { setupCommand } from "./setup";
-
-// Names that should be routed to the setup generator instead of the registry
-const SETUP_NAMES = new Set([
-  "crm-setup", "erp-setup", "saas-setup", "auth-setup", "auth-only",
-  "crm", "erp", "saas", "auth",
-]);
 
 export async function addCommand(args: string[]): Promise<void> {
   const parsed = parseArgs(args);
   let [name] = parsed.positionals;
-
-  // Intercept setup names and delegate to the setup generator
-  if (name && SETUP_NAMES.has(name.toLowerCase())) {
-    return setupCommand(args);
-  }
 
   const cwd = process.cwd();
   const config = await loadConfig(cwd);
@@ -66,11 +54,18 @@ export async function addCommand(args: string[]): Promise<void> {
     source: config.registryUrl
   });
 
-  section("Installed", successText(`${detail.name}@${detail.version}`));
+  section("Installed", successText(`${detail.name}@${detail.version}`) + mutedText(` (${detail.type})`));
   console.log(indent(detail.description));
   divider();
   for (const filePath of writtenPaths) {
     console.log(indent(filePath));
+  }
+
+  if (detail.type === "block") {
+    divider();
+    console.log(indent(warningText("Blocks require Struct UI styles to render correctly.")));
+    console.log(indent(mutedText("If you haven't already, run: npx sui style")));
+    console.log(indent(mutedText("Also ensure your <html> element has className=\"dark\" or a theme class.")));
   }
 
   if (target.dependencies.length > 0) {
