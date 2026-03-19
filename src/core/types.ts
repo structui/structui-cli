@@ -49,4 +49,5 @@ export type CliConfig = {
   installPath: string;
   statePath: string;
   cachePath: string;
+  utilsPath: string;
 };

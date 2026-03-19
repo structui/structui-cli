@@ -10,12 +10,18 @@ const init_1 = require("./commands/init");
 const list_1 = require("./commands/list");
 const registry_1 = require("./commands/registry");
 const search_1 = require("./commands/search");
+const setup_1 = require("./commands/setup");
 const update_1 = require("./commands/update");
 const version_1 = require("./commands/version");
+const style_1 = require("./commands/style");
+const palette_1 = require("./commands/palette");
 const console_1 = require("./utils/console");
 const commands = new Map([
     ["init", init_1.initCommand],
     ["add", add_1.addCommand],
+    ["setup", setup_1.setupCommand],
+    ["style", style_1.styleCommand],
+    ["palette", palette_1.paletteCommand],
     ["search", search_1.searchCommand],
     ["info", info_1.infoCommand],
     ["list", list_1.listCommand],

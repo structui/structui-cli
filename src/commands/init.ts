@@ -1,7 +1,8 @@
+import { execSync } from "node:child_process";
 import path from "node:path";
 import { loadConfig } from "../core/config";
-import { ensureDir, readJsonFile, writeJsonFile } from "../utils/fs";
-import { divider, indent, mutedText, section, successText } from "../utils/console";
+import { ensureDir, readJsonFile, writeJsonFile, writeTextFile } from "../utils/fs";
+import { divider, indent, mutedText, section, successText, warningText } from "../utils/console";
 
 type PackageJson = {
   scripts?: Record<string, string>;
@@ -18,12 +19,26 @@ export async function initCommand(): Promise<void> {
     registryUrl: config.registryUrl,
     installPath: config.installPath,
     statePath: config.statePath,
-    cachePath: config.cachePath
+    cachePath: config.cachePath,
+    utilsPath: config.utilsPath
   });
 
   await ensureDir(path.join(cwd, path.dirname(config.statePath)));
   await ensureDir(path.join(cwd, path.dirname(config.cachePath)));
   await ensureDir(path.join(cwd, config.installPath));
+  
+  const fullUtilsPath = path.join(cwd, config.utilsPath);
+  await ensureDir(path.dirname(fullUtilsPath));
+
+  const utilsContent = `import { type ClassValue, clsx } from "clsx";
+import { twMerge } from "tailwind-merge";
+
+export function cn(...inputs: ClassValue[]) {
+  return twMerge(clsx(inputs));
+}
+`;
+  await writeTextFile(fullUtilsPath, utilsContent);
+
   await writeJsonFile(path.join(cwd, config.statePath), { packages: [] });
 
   const packageJson = existingPackageJson ?? {};
@@ -38,7 +53,17 @@ export async function initCommand(): Promise<void> {
   section("Initialized", successText("Struct UI CLI is ready."));
   console.log(indent("Created sui.config.json"));
   console.log(indent(`Install path: ${config.installPath}`));
-  console.log(indent(`State path: ${config.statePath}`));
+  console.log(indent(`Utils path: ${config.utilsPath}`));
+  divider();
+
+  console.log(indent(mutedText("Installing dependencies (clsx, tailwind-merge)...")));
+  try {
+    execSync("npm install clsx tailwind-merge", { stdio: "inherit", cwd });
+    console.log(indent(successText("Dependencies installed successfully.")));
+  } catch (error) {
+    console.log(indent(warningText("Failed to install dependencies. Please run 'npm install clsx tailwind-merge' manually.")));
+  }
+
   divider();
   console.log(indent(mutedText("Next step: npx sui search")));
 }

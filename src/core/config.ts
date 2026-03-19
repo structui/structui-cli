@@ -15,6 +15,7 @@ export async function loadConfig(cwd: string): Promise<CliConfig> {
     registryUrl: config.registryUrl ?? DEFAULT_REGISTRY_URL,
     installPath: config.installPath ?? "components/struct",
     statePath: config.statePath ?? ".sui/installed.json",
-    cachePath: config.cachePath ?? ".sui/cache/registry-index.json"
+    cachePath: config.cachePath ?? ".sui/cache/registry-index.json",
+    utilsPath: config.utilsPath ?? "src/lib/utils.ts"
   };
 }

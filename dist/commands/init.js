@@ -4,6 +4,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.initCommand = initCommand;
+const node_child_process_1 = require("node:child_process");
 const node_path_1 = __importDefault(require("node:path"));
 const config_1 = require("../core/config");
 const fs_1 = require("../utils/fs");
@@ -18,11 +19,22 @@ async function initCommand() {
         registryUrl: config.registryUrl,
         installPath: config.installPath,
         statePath: config.statePath,
-        cachePath: config.cachePath
+        cachePath: config.cachePath,
+        utilsPath: config.utilsPath
     });
     await (0, fs_1.ensureDir)(node_path_1.default.join(cwd, node_path_1.default.dirname(config.statePath)));
     await (0, fs_1.ensureDir)(node_path_1.default.join(cwd, node_path_1.default.dirname(config.cachePath)));
     await (0, fs_1.ensureDir)(node_path_1.default.join(cwd, config.installPath));
+    const fullUtilsPath = node_path_1.default.join(cwd, config.utilsPath);
+    await (0, fs_1.ensureDir)(node_path_1.default.dirname(fullUtilsPath));
+    const utilsContent = `import { type ClassValue, clsx } from "clsx";
+import { twMerge } from "tailwind-merge";
+
+export function cn(...inputs: ClassValue[]) {
+  return twMerge(clsx(inputs));
+}
+`;
+    await (0, fs_1.writeTextFile)(fullUtilsPath, utilsContent);
     await (0, fs_1.writeJsonFile)(node_path_1.default.join(cwd, config.statePath), { packages: [] });
     const packageJson = existingPackageJson ?? {};
     packageJson.scripts = {
@@ -34,7 +46,16 @@ async function initCommand() {
     (0, console_1.section)("Initialized", (0, console_1.successText)("Struct UI CLI is ready."));
     console.log((0, console_1.indent)("Created sui.config.json"));
     console.log((0, console_1.indent)(`Install path: ${config.installPath}`));
-    console.log((0, console_1.indent)(`State path: ${config.statePath}`));
+    console.log((0, console_1.indent)(`Utils path: ${config.utilsPath}`));
+    (0, console_1.divider)();
+    console.log((0, console_1.indent)((0, console_1.mutedText)("Installing dependencies (clsx, tailwind-merge)...")));
+    try {
+        (0, node_child_process_1.execSync)("npm install clsx tailwind-merge", { stdio: "inherit", cwd });
+        console.log((0, console_1.indent)((0, console_1.successText)("Dependencies installed successfully.")));
+    }
+    catch (error) {
+        console.log((0, console_1.indent)((0, console_1.warningText)("Failed to install dependencies. Please run 'npm install clsx tailwind-merge' manually.")));
+    }
     (0, console_1.divider)();
     console.log((0, console_1.indent)((0, console_1.mutedText)("Next step: npx sui search")));
 }

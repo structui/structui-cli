@@ -7,8 +7,11 @@ import { initCommand } from "./commands/init";
 import { listCommand } from "./commands/list";
 import { registryCommand } from "./commands/registry";
 import { searchCommand } from "./commands/search";
+import { setupCommand } from "./commands/setup";
 import { updateCommand } from "./commands/update";
 import { versionCommand } from "./commands/version";
+import { styleCommand } from "./commands/style";
+import { paletteCommand } from "./commands/palette";
 import { errorText } from "./utils/console";
 
 type CommandHandler = (args: string[]) => Promise<void>;
@@ -16,6 +19,9 @@ type CommandHandler = (args: string[]) => Promise<void>;
 const commands = new Map<string, CommandHandler>([
   ["init", initCommand],
   ["add", addCommand],
+  ["setup", setupCommand],
+  ["style", styleCommand],
+  ["palette", paletteCommand],
   ["search", searchCommand],
   ["info", infoCommand],
   ["list", listCommand],

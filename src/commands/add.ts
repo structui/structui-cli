@@ -1,21 +1,47 @@
+import { execSync } from "node:child_process";
 import path from "node:path";
+import prompts from "prompts";
 import { loadConfig } from "../core/config";
 import { findRegistryItem, loadRegistryIndex, loadRegistryItem } from "../core/registry";
 import { saveInstalledPackage } from "../core/state";
 import { parseArgs } from "../utils/args";
 import { writeTextFile } from "../utils/fs";
 import { divider, indent, mutedText, section, successText, warningText } from "../utils/console";
+import { setupCommand } from "./setup";
+
+// Names that should be routed to the setup generator instead of the registry
+const SETUP_NAMES = new Set([
+  "crm-setup", "erp-setup", "saas-setup", "auth-setup", "auth-only",
+  "crm", "erp", "saas", "auth",
+]);
 
 export async function addCommand(args: string[]): Promise<void> {
   const parsed = parseArgs(args);
-  const [name] = parsed.positionals;
-  if (!name) {
-    throw new Error("Usage: sui add <name>");
+  let [name] = parsed.positionals;
+
+  // Intercept setup names and delegate to the setup generator
+  if (name && SETUP_NAMES.has(name.toLowerCase())) {
+    return setupCommand(args);
   }
 
   const cwd = process.cwd();
   const config = await loadConfig(cwd);
   const index = await loadRegistryIndex(config);
+
+  if (!name) {
+    const response = await prompts({
+      type: "autocomplete",
+      name: "component",
+      message: "Which component would you like to add?",
+      choices: index.items.map((item) => ({ title: item.name, value: item.name, description: item.description })),
+    });
+
+    if (!response.component) {
+      console.log(indent(mutedText("Canceled.")));
+      return;
+    }
+    name = response.component;
+  }
   const target = findRegistryItem(index, name);
 
   if (!target) {
@@ -49,8 +75,15 @@ export async function addCommand(args: string[]): Promise<void> {
 
   if (target.dependencies.length > 0) {
     divider();
-    console.log(indent(warningText(`Dependencies declared: ${target.dependencies.join(", ")}`)));
+    console.log(indent(mutedText(`Installing dependencies: ${target.dependencies.join(", ")}...`)));
+    try {
+      execSync(`npm install ${target.dependencies.join(" ")}`, { stdio: "inherit", cwd });
+      console.log(indent(successText("Dependencies installed successfully.")));
+    } catch (error) {
+      console.log(indent(warningText(`Failed to install dependencies: ${target.dependencies.join(", ")}`)));
+    }
   }
 
+  divider();
   console.log(indent(mutedText("State saved to .sui/installed.json")));
 }
