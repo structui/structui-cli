@@ -6,6 +6,7 @@ export type RegistryIndexItem = {
     description: string;
     entrypoint: string;
     dependencies: string[];
+    registryDependencies?: string[];
     tags?: string[];
 };
 export type RegistryIndex = {
@@ -23,6 +24,7 @@ export type RegistryDetail = {
     version: string;
     description: string;
     dependencies?: string[];
+    registryDependencies?: string[];
     tags?: string[];
     files: RegistryFile[];
 };

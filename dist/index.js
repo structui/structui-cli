@@ -37,7 +37,15 @@ const commands = new Map([
     ["-v", version_1.versionCommand]
 ]);
 async function run(args) {
-    const [command = "help", ...rest] = args;
+    let [command = "help", ...rest] = args;
+    if (["crm", "erp", "saas", "auth"].includes(command)) {
+        rest = [command, ...rest];
+        command = "setup";
+    }
+    else if (command === "crm-setup" || command === "erp-setup" || command === "saas-setup" || command === "auth-setup") {
+        rest = [command.replace("-setup", ""), ...rest];
+        command = "setup";
+    }
     const handler = commands.get(command);
     if (!handler) {
         console.error((0, console_1.errorText)(`Unknown command: ${command}`));

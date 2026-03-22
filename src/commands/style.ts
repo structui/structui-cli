@@ -294,18 +294,22 @@ export async function styleCommand(args: string[]): Promise<void> {
   let targetPath = possiblePaths.find(p => fs.existsSync(path.join(cwd, p)));
 
   if (!targetPath) {
-    const response = await prompts({
-      type: "text",
-      name: "path",
-      message: "Where is your global CSS file located? (e.g. app/globals.css)",
-      initial: "app/globals.css"
-    });
-    
-    if (!response.path) {
-      console.log(indent(mutedText("Canceled.")));
-      return;
+    if (args.includes("--auto")) {
+      targetPath = "app/globals.css";
+    } else {
+      const response = await prompts({
+        type: "text",
+        name: "path",
+        message: "Where is your global CSS file located? (e.g. app/globals.css)",
+        initial: "app/globals.css"
+      });
+      
+      if (!response.path) {
+        console.log(indent(mutedText("Canceled.")));
+        return;
+      }
+      targetPath = response.path;
     }
-    targetPath = response.path;
   }
 
   const finalPath = targetPath as string;

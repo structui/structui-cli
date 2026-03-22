@@ -115,84 +115,18 @@ async function setupCommand(args) {
     const chosenSetup = setupEntries.find((s) => s.name === setupName);
     if (!chosenSetup)
         throw new Error(`Setup not found: ${setupName}`);
-    // 3. Project title ─────────────────────────────────────────────────────────
-    const titleRes = await (0, prompts_1.default)({
-        type: "text",
-        name: "title",
-        message: "Project title?",
-        initial: `${chosenSetup.label} App`,
-        validate: (v) => v.trim().length > 0 || "Title cannot be empty",
-    });
-    if (!titleRes.title) {
-        console.log((0, console_1.indent)((0, console_1.mutedText)("Canceled.")));
-        return;
-    }
-    const projectTitle = titleRes.title.trim();
-    // 4. Color palette ─────────────────────────────────────────────────────────
-    const colorRes = await (0, prompts_1.default)({
-        type: "select",
-        name: "color",
-        message: "Primary color palette?",
-        choices: COLOR_CHOICES,
-        initial: 1, // blue
-    });
-    if (!colorRes.color) {
-        console.log((0, console_1.indent)((0, console_1.mutedText)("Canceled.")));
-        return;
-    }
-    const colorPalette = colorRes.color;
-    // 5. Auth provider ─────────────────────────────────────────────────────────
-    const authRes = await (0, prompts_1.default)({
-        type: "select",
-        name: "provider",
-        message: "Authentication provider?",
-        choices: AUTH_CHOICES,
-    });
-    if (authRes.provider === undefined) {
-        console.log((0, console_1.indent)((0, console_1.mutedText)("Canceled.")));
-        return;
-    }
-    const authProvider = authRes.provider;
-    // 6. Output location ───────────────────────────────────────────────────────
-    const locationRes = await (0, prompts_1.default)({
-        type: "select",
-        name: "location",
-        message: "Where would you like to place the generated files?",
-        choices: [
-            {
-                title: "Main project (current directory)",
-                value: "main",
-                description: "Write files directly into your project — ready to run immediately",
-            },
-            {
-                title: `struct/setups/${setupName}`,
-                value: "struct",
-                description: "Save as a reference template — copy manually when ready",
-            },
-        ],
-    });
-    if (!locationRes.location) {
-        console.log((0, console_1.indent)((0, console_1.mutedText)("Canceled.")));
-        return;
-    }
-    const outputToMain = locationRes.location === "main";
-    const basePath = outputToMain ? cwd : node_path_1.default.join(cwd, "struct", "setups", setupName);
-    // 7. Confirm ───────────────────────────────────────────────────────────────
+    const projectTitle = `${chosenSetup.label} App`;
+    const colorPalette = "slate";
+    const authProvider = "none";
+    const outputToMain = true;
+    const basePath = cwd;
     console.log();
     (0, console_1.divider)();
     console.log((0, console_1.indent)((0, console_1.titleText)("Summary")));
     console.log((0, console_1.indent)(`Setup     ${(0, console_1.accentText)(chosenSetup.label)}`));
-    console.log((0, console_1.indent)(`Title     ${(0, console_1.accentText)(projectTitle)}`));
-    console.log((0, console_1.indent)(`Color     ${(0, console_1.accentText)(colorPalette)}`));
-    console.log((0, console_1.indent)(`Auth      ${(0, console_1.accentText)(authProvider)}`));
-    console.log((0, console_1.indent)(`Output    ${(0, console_1.accentText)(outputToMain ? "Current directory" : `struct/setups/${setupName}`)}`));
+    console.log((0, console_1.indent)(`Output    ${(0, console_1.accentText)("Current directory")}`));
     (0, console_1.divider)();
     console.log();
-    const confirmRes = await (0, prompts_1.default)({ type: "confirm", name: "ok", message: "Generate setup?", initial: true });
-    if (!confirmRes.ok) {
-        console.log((0, console_1.indent)((0, console_1.mutedText)("Canceled.")));
-        return;
-    }
     // 8. Fetch generated files from StructUI API ───────────────────────────────
     console.log();
     (0, console_1.section)("Fetching files from registry…");

@@ -38,7 +38,16 @@ const commands = new Map<string, CommandHandler>([
 ]);
 
 export async function run(args: string[]): Promise<void> {
-  const [command = "help", ...rest] = args;
+  let [command = "help", ...rest] = args;
+  
+  if (["crm", "erp", "saas", "auth"].includes(command)) {
+    rest = [command, ...rest];
+    command = "setup";
+  } else if (command === "crm-setup" || command === "erp-setup" || command === "saas-setup" || command === "auth-setup") {
+    rest = [command.replace("-setup", ""), ...rest];
+    command = "setup";
+  }
+
   const handler = commands.get(command);
 
   if (!handler) {

@@ -294,17 +294,22 @@ async function styleCommand(args) {
     ];
     let targetPath = possiblePaths.find(p => node_fs_1.default.existsSync(node_path_1.default.join(cwd, p)));
     if (!targetPath) {
-        const response = await (0, prompts_1.default)({
-            type: "text",
-            name: "path",
-            message: "Where is your global CSS file located? (e.g. app/globals.css)",
-            initial: "app/globals.css"
-        });
-        if (!response.path) {
-            console.log((0, console_1.indent)((0, console_1.mutedText)("Canceled.")));
-            return;
+        if (args.includes("--auto")) {
+            targetPath = "app/globals.css";
         }
-        targetPath = response.path;
+        else {
+            const response = await (0, prompts_1.default)({
+                type: "text",
+                name: "path",
+                message: "Where is your global CSS file located? (e.g. app/globals.css)",
+                initial: "app/globals.css"
+            });
+            if (!response.path) {
+                console.log((0, console_1.indent)((0, console_1.mutedText)("Canceled.")));
+                return;
+            }
+            targetPath = response.path;
+        }
     }
     const finalPath = targetPath;
     const absolutePath = node_path_1.default.join(cwd, finalPath);

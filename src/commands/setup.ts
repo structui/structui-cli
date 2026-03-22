@@ -158,80 +158,19 @@ export async function setupCommand(args: string[]): Promise<void> {
   const chosenSetup = setupEntries.find((s) => s.name === setupName);
   if (!chosenSetup) throw new Error(`Setup not found: ${setupName}`);
 
-  // 3. Project title ─────────────────────────────────────────────────────────
-
-  const titleRes = await prompts({
-    type: "text",
-    name: "title",
-    message: "Project title?",
-    initial: `${chosenSetup.label} App`,
-    validate: (v: string) => v.trim().length > 0 || "Title cannot be empty",
-  });
-  if (!titleRes.title) { console.log(indent(mutedText("Canceled."))); return; }
-  const projectTitle: string = titleRes.title.trim();
-
-  // 4. Color palette ─────────────────────────────────────────────────────────
-
-  const colorRes = await prompts({
-    type: "select",
-    name: "color",
-    message: "Primary color palette?",
-    choices: COLOR_CHOICES,
-    initial: 1, // blue
-  });
-  if (!colorRes.color) { console.log(indent(mutedText("Canceled."))); return; }
-  const colorPalette: ColorPalette = colorRes.color;
-
-  // 5. Auth provider ─────────────────────────────────────────────────────────
-
-  const authRes = await prompts({
-    type: "select",
-    name: "provider",
-    message: "Authentication provider?",
-    choices: AUTH_CHOICES,
-  });
-  if (authRes.provider === undefined) { console.log(indent(mutedText("Canceled."))); return; }
-  const authProvider: AuthProvider = authRes.provider;
-
-  // 6. Output location ───────────────────────────────────────────────────────
-
-  const locationRes = await prompts({
-    type: "select",
-    name: "location",
-    message: "Where would you like to place the generated files?",
-    choices: [
-      {
-        title: "Main project (current directory)",
-        value: "main",
-        description: "Write files directly into your project — ready to run immediately",
-      },
-      {
-        title: `struct/setups/${setupName}`,
-        value: "struct",
-        description: "Save as a reference template — copy manually when ready",
-      },
-    ],
-  });
-  if (!locationRes.location) { console.log(indent(mutedText("Canceled."))); return; }
-
-  const outputToMain = locationRes.location === "main";
-  const basePath = outputToMain ? cwd : path.join(cwd, "struct", "setups", setupName);
-
-  // 7. Confirm ───────────────────────────────────────────────────────────────
+  const projectTitle: string = `${chosenSetup.label} App`;
+  const colorPalette: ColorPalette = "slate";
+  const authProvider: AuthProvider = "none";
+  const outputToMain = true;
+  const basePath = cwd;
 
   console.log();
   divider();
   console.log(indent(titleText("Summary")));
   console.log(indent(`Setup     ${accentText(chosenSetup.label)}`));
-  console.log(indent(`Title     ${accentText(projectTitle)}`));
-  console.log(indent(`Color     ${accentText(colorPalette)}`));
-  console.log(indent(`Auth      ${accentText(authProvider)}`));
-  console.log(indent(`Output    ${accentText(outputToMain ? "Current directory" : `struct/setups/${setupName}`)}`));
+  console.log(indent(`Output    ${accentText("Current directory")}`));
   divider();
   console.log();
-
-  const confirmRes = await prompts({ type: "confirm", name: "ok", message: "Generate setup?", initial: true });
-  if (!confirmRes.ok) { console.log(indent(mutedText("Canceled."))); return; }
 
   // 8. Fetch generated files from StructUI API ───────────────────────────────
 

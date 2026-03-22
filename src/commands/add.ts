@@ -7,16 +7,18 @@ import { saveInstalledPackage } from "../core/state";
 import { parseArgs } from "../utils/args";
 import { writeTextFile } from "../utils/fs";
 import { divider, indent, mutedText, section, successText, warningText } from "../utils/console";
+import { CliConfig } from "../core/types";
+import { RegistryIndex } from "../core/types";
 
 export async function addCommand(args: string[]): Promise<void> {
   const parsed = parseArgs(args);
-  let [name] = parsed.positionals;
+  let [initialName] = parsed.positionals;
 
   const cwd = process.cwd();
   const config = await loadConfig(cwd);
   const index = await loadRegistryIndex(config);
 
-  if (!name) {
+  if (!initialName) {
     const response = await prompts({
       type: "autocomplete",
       name: "component",
@@ -28,54 +30,90 @@ export async function addCommand(args: string[]): Promise<void> {
       console.log(indent(mutedText("Canceled.")));
       return;
     }
-    name = response.component;
-  }
-  const target = findRegistryItem(index, name);
-
-  if (!target) {
-    throw new Error(`Package not found in registry: ${name}`);
+    initialName = response.component;
   }
 
-  const detail = await loadRegistryItem(config, target);
-  const writtenPaths: string[] = [];
+  const installedDeps = new Set<string>();
+  const collectedNpmDeps = new Set<string>();
 
-  for (const file of detail.files) {
-    const targetPath = path.join(cwd, config.installPath, file.path);
-    await writeTextFile(targetPath, file.content + "\n");
-    writtenPaths.push(path.relative(cwd, targetPath));
+  async function installItem(name: string, isDep: boolean) {
+    if (installedDeps.has(name)) return;
+    installedDeps.add(name);
+
+    const target = findRegistryItem(index, name);
+    if (!target) {
+      if (!isDep) throw new Error(`Package not found in registry: ${name}`);
+      console.log(indent(warningText(`Dependency not found in registry: ${name}`)));
+      return;
+    }
+
+    const detail = await loadRegistryItem(config, target);
+    const writtenPaths: string[] = [];
+
+    for (const file of detail.files) {
+      // Create path dynamically, checking if file.path has a sub-folder or rely on config installPath
+      let resolvedPath = path.join(cwd, config.installPath, file.path);
+      // Automatically nest blocks under blocks/ or components/ if needed (based on detail.type)
+      if (detail.type === "block" && !file.path.startsWith("blocks/")) {
+        resolvedPath = path.join(cwd, config.installPath, "blocks", file.path);
+      } else if (detail.type === "component" && !file.path.startsWith("ui/")) {
+        resolvedPath = path.join(cwd, config.installPath, "ui", file.path);
+      }
+      await writeTextFile(resolvedPath, file.content + "\\n");
+      writtenPaths.push(path.relative(cwd, resolvedPath));
+    }
+
+    await saveInstalledPackage(cwd, config, {
+      name: detail.name,
+      type: detail.type,
+      version: detail.version,
+      installedAt: new Date().toISOString(),
+      targetPaths: writtenPaths,
+      source: config.registryUrl,
+    });
+
+    if (!isDep) {
+      section("Installed", successText(`${detail.name}@${detail.version}`) + mutedText(` (${detail.type})`));
+      console.log(indent(detail.description));
+      divider();
+    } else {
+      console.log(indent(successText(`+ ${detail.name}`) + mutedText(` (dependency)`)));
+    }
+
+    for (const filePath of writtenPaths) {
+      console.log(indent(`  ${filePath}`));
+    }
+
+    if (!isDep && detail.type === "block") {
+      divider();
+      console.log(indent(warningText("Blocks require Struct UI styles to render correctly.")));
+      console.log(indent(mutedText("Ensure your <html> element has className=\"dark\" or a theme class.")));
+    }
+
+    if (detail.dependencies) {
+      for (const dep of detail.dependencies) {
+        collectedNpmDeps.add(dep);
+      }
+    }
+
+    if (detail.registryDependencies && detail.registryDependencies.length > 0) {
+      for (const reqDep of detail.registryDependencies) {
+        await installItem(reqDep, true);
+      }
+    }
   }
 
-  await saveInstalledPackage(cwd, config, {
-    name: detail.name,
-    type: detail.type,
-    version: detail.version,
-    installedAt: new Date().toISOString(),
-    targetPaths: writtenPaths,
-    source: config.registryUrl
-  });
+  await installItem(initialName, false);
 
-  section("Installed", successText(`${detail.name}@${detail.version}`) + mutedText(` (${detail.type})`));
-  console.log(indent(detail.description));
-  divider();
-  for (const filePath of writtenPaths) {
-    console.log(indent(filePath));
-  }
-
-  if (detail.type === "block") {
+  if (collectedNpmDeps.size > 0) {
     divider();
-    console.log(indent(warningText("Blocks require Struct UI styles to render correctly.")));
-    console.log(indent(mutedText("If you haven't already, run: npx sui style")));
-    console.log(indent(mutedText("Also ensure your <html> element has className=\"dark\" or a theme class.")));
-  }
-
-  if (target.dependencies.length > 0) {
-    divider();
-    console.log(indent(mutedText(`Installing dependencies: ${target.dependencies.join(", ")}...`)));
+    const npmDepsList = Array.from(collectedNpmDeps);
+    console.log(indent(mutedText(`Installing NPM dependencies: ${npmDepsList.join(", ")}...`)));
     try {
-      execSync(`npm install ${target.dependencies.join(" ")}`, { stdio: "inherit", cwd });
+      execSync(`npm install ${npmDepsList.join(" ")}`, { stdio: "inherit", cwd });
       console.log(indent(successText("Dependencies installed successfully.")));
     } catch (error) {
-      console.log(indent(warningText(`Failed to install dependencies: ${target.dependencies.join(", ")}`)));
+      console.log(indent(warningText(`Failed to install NPM dependencies. Run manually: npm i ${npmDepsList.join(" ")}`)));
     }
   }
 
