@@ -1,10 +1,21 @@
-import { divider, indent, mutedText, section } from "../utils/console";
+import { banner, divider, example, mutedText, section } from "../utils/console";
 
 export async function aboutCommand(): Promise<void> {
-  section("About", "Struct UI CLI");
-  console.log(indent("Website: https://structui.com"));
-  console.log(indent("GitHub: https://github.com/structui"));
-  console.log(indent("Purpose: install and manage Struct UI blocks/components"));
+  banner();
+  
+  section("Project Information");
+  console.log("");
+  console.log(`  ${mutedText("Website")}      https://structui.com`);
+  console.log(`  ${mutedText("GitHub")}       https://github.com/structui/struct-cli`);
+  console.log(`  ${mutedText("NPM")}          https://www.npmjs.com/package/structui-cli`);
+  console.log("");
+  
+  section("Vision");
+  console.log(mutedText("  Providing high-quality, pre-built React components and blocks"));
+  console.log(mutedText("  that follow modern design trends and accessibility standards."));
+  
+  console.log("");
   divider();
-  console.log(indent(mutedText("Built for a simple npx-first workflow.")));
+  console.log(mutedText("  Built by Struct UI Team • MIT Licensed"));
+  console.log("");
 }

@@ -16,42 +16,61 @@ import { errorText } from "./utils/console";
 
 type CommandHandler = (args: string[]) => Promise<void>;
 
-const commands = new Map<string, CommandHandler>([
-  ["init", initCommand],
-  ["add", addCommand],
-  ["setup", setupCommand],
-  ["style", styleCommand],
-  ["palette", paletteCommand],
-  ["search", searchCommand],
-  ["info", infoCommand],
-  ["list", listCommand],
-  ["update", updateCommand],
-  ["registry", registryCommand],
-  ["doctor", doctorCommand],
-  ["version", versionCommand],
-  ["about", aboutCommand],
-  ["help", helpCommand],
-  ["--help", helpCommand],
-  ["-h", helpCommand],
-  ["--version", versionCommand],
-  ["-v", versionCommand]
-]);
+/**
+ * Command registry for the Struct UI CLI.
+ * Maps command names and their aliases to handler functions.
+ */
+const COMMANDS: Record<string, CommandHandler> = {
+  // Setup & init
+  init: initCommand,
+  setup: setupCommand,
+  style: styleCommand,
+  palette: paletteCommand,
 
+  // Package management
+  add: addCommand,
+  search: searchCommand,
+  info: infoCommand,
+  list: listCommand,
+  update: updateCommand,
+
+  // System & Information
+  registry: registryCommand,
+  doctor: doctorCommand,
+  version: versionCommand,
+  about: aboutCommand,
+  help: helpCommand,
+
+  // Global Flags
+  "--help": helpCommand,
+  "-h": helpCommand,
+  "--version": versionCommand,
+  "-v": versionCommand
+};
+
+const SETUP_ALIASES = ["crm", "erp", "saas", "auth"];
+
+/**
+ * Main entry point for the CLI.
+ * Parses arguments and dispatches to the appropriate command handler.
+ */
 export async function run(args: string[]): Promise<void> {
   let [command = "help", ...rest] = args;
   
-  if (["crm", "erp", "saas", "auth"].includes(command)) {
+  // Normalize command aliases for setup
+  if (SETUP_ALIASES.includes(command)) {
     rest = [command, ...rest];
     command = "setup";
-  } else if (command === "crm-setup" || command === "erp-setup" || command === "saas-setup" || command === "auth-setup") {
+  } else if (SETUP_ALIASES.some(alias => command === `${alias}-setup`)) {
     rest = [command.replace("-setup", ""), ...rest];
     command = "setup";
   }
 
-  const handler = commands.get(command);
+  const handler = COMMANDS[command];
 
   if (!handler) {
-    console.error(errorText(`Unknown command: ${command}`));
+    console.error(errorText(`Error: Unknown command "${command}"`));
+    console.log("");
     await helpCommand([]);
     process.exitCode = 1;
     return;
@@ -60,8 +79,14 @@ export async function run(args: string[]): Promise<void> {
   try {
     await handler(rest);
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Unknown error";
-    console.error(errorText(message));
+    const message = error instanceof Error ? error.message : "An unexpected error occurred";
+    console.error("");
+    console.error(errorText(`CRITICAL ERROR: ${message}`));
+    
+    if (process.env.DEBUG) {
+      console.error(error);
+    }
+    
     process.exitCode = 1;
   }
 }
